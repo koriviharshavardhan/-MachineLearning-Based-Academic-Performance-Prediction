@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tech for Girls — Registration</title>
+  <style>
+    /* Simple modern UI inspired by clean signup cards */
+    :root{--bg:#f5f7fb;--card:#ffffff;--accent:#7c5cff;--muted:#6b7280}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Segoe UI,Roboto,system-ui,Arial;background:linear-gradient(180deg,var(--bg),#eef2ff 60%);color:#111}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px}
+    .card{width:100%;max-width:820px;background:var(--card);border-radius:14px;box-shadow:0 10px 30px rgba(20,20,50,0.08);overflow:hidden;display:grid;grid-template-columns:1fr 420px}
+    .left{padding:36px}
+    .logo{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+    .brand{font-weight:700;color:var(--accent);font-size:20px}
+    h1{margin:6px 0 6px;font-size:20px}
+    p.lead{margin:0;color:var(--muted)}
+    form{margin-top:18px;display:grid;gap:12px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    label{font-size:13px;color:var(--muted)}
+    input[type=text],input[type=number],input[type=email],select{width:100%;padding:12px;border-radius:8px;border:1px solid #e6e9f2;background:#fbfdff}
+    input[type=file]{padding:8px}
+    .right{background:linear-gradient(180deg,#faf8ff,#fff);padding:28px;border-left:1px dashed rgba(120,120,180,0.06)}
+    .share-box{display:flex;flex-direction:column;gap:12px}
+    .btn{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;border:0;background:var(--accent);color:white;font-weight:600;cursor:pointer}
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(124,92,255,0.14)}
+    .muted{color:var(--muted);font-size:13px}
+    .count{font-weight:700}
+    .note{font-size:13px;color:#0f5132;background:#d1e7dd;padding:10px;border-radius:8px}
+    .success{font-size:15px;color:#0f5132}
+    .disabled{opacity:0.6;pointer-events:none}
+    footer{font-size:12px;color:var(--muted);margin-top:12px}
+    @media(max-width:880px){.card{grid-template-columns:1fr}.right{border-left:0;border-top:1px dashed rgba(120,120,180,0.06)}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" role="main">
+      <div class="left">
+        <div class="logo"><div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#5ec7ff)"></div><div class="brand">Tech for Girls</div></div>
+        <h1>Registration</h1>
+        <p class="lead">Join our community — fill the form, share on WhatsApp 5 times and upload a screenshot to complete registration.</p>
+
+        <form id="regForm">
+          <div class="grid">
+            <div>
+              <label for="name">Full name</label>
+              <input id="name" name="name" type="text" required />
+            </div>
+            <div>
+              <label for="phone">Phone number</label>
+              <input id="phone" name="phone" type="number" required />
+            </div>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label for="email">Email ID</label>
+              <input id="email" name="email" type="email" required />
+            </div>
+            <div>
+              <label for="college">College / Department</label>
+              <select id="college" name="college">
+                <option value="">-- Select or type --</option>
+                <option>Computer Science</option>
+                <option>Electronics</option>
+                <option>Mechanical</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label for="screenshot">Upload screenshot (resume/photo) — PNG/JPG/PDF</label>
+            <input id="screenshot" name="screenshot" type="file" accept="image/*,.pdf" required />
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+            <button type="button" id="shareBtn" class="btn">Share on WhatsApp</button>
+            <div class="muted">Click count: <span id="count" class="count">0</span>/5</div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:18px">
+            <button id="submitBtn" class="btn" type="submit">Submit Registration</button>
+            <button id="clearBtn" type="button" class="btn ghost">Reset (dev)</button>
+          </div>
+
+          <div id="message" style="margin-top:12px"></div>
+
+          <footer>After successful submission the form is disabled and a flag is saved so re-submission isn't possible.</footer>
+        </form>
+      </div>
+
+      <div class="right">
+        <h3>How sharing works</h3>
+        <div class="share-box">
+          <p class="muted">When you click "Share on WhatsApp" a new WhatsApp window/tab opens with a prefilled message. Each click increases the counter. After 5 clicks, the form allows submission.</p>
+          <div class="note" id="shareNote">Share 5 times to enable submission</div>
+          <div style="margin-top:12px">
+            <strong>Tips</strong>
+            <ul style="margin:6px 0 0 18px;color:var(--muted)">
+              <li>Use a phone or WhatsApp Web on desktop.</li>
+              <li>If WhatsApp doesn't open, try scanning QR on web.whatsapp.com.</li>
+              <li>Screenshot upload can be an image or PDF.</li>
+            </ul>
+          </div>
+          <div style="margin-top:12px">
+            <div class="muted">Submission status:</div>
+            <div id="status" class="muted">Not submitted</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ====== Configuration ======
+    // Replace this with your deployed Google Apps Script Web App URL
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYED_WEBAPP_ID/exec';
+
+    // Pre-written Whatsapp message
+    const WHATSAPP_MESSAGE = `Hey Buddy, Join Tech For Girls Community`;
+
+    // ====== Logic ======
+    const shareBtn = document.getElementById('shareBtn');
+    const countEl = document.getElementById('count');
+    const shareNote = document.getElementById('shareNote');
+    const submitBtn = document.getElementById('submitBtn');
+    const regForm = document.getElementById('regForm');
+    const statusEl = document.getElementById('status');
+    const messageEl = document.getElementById('message');
+    const clearBtn = document.getElementById('clearBtn');
+
+    // Local storage keys
+    const LS_COUNT = 'tfg_share_count';
+    const LS_SUBMITTED = 'tfg_submitted_flag';
+
+    // initialize
+    let count = parseInt(localStorage.getItem(LS_COUNT) || '0', 10);
+    const submitted = localStorage.getItem(LS_SUBMITTED) === 'true';
+    countEl.textContent = count;
+
+    if (submitted) {
+      markSubmittedState();
+    }
+
+    function updateShareNote(){
+      if (count >= 5) {
+        shareNote.textContent = 'Sharing complete. Please continue with registration.';
+      } else {
+        shareNote.textContent = `Share ${5 - count} more time(s) to enable submission.`;
+      }
+    }
+    updateShareNote();
+
+    shareBtn.addEventListener('click', () => {
+      // Open WhatsApp intent (works on desktop and mobile)
+      const encoded = encodeURIComponent(WHATSAPP_MESSAGE);
+      const url = `https://wa.me/?text=${encoded}`;
+      window.open(url, '_blank');
+
+      // increase counter locally
+      count = Math.min(count + 1, 5);
+      localStorage.setItem(LS_COUNT, String(count));
+      countEl.textContent = count;
+      updateShareNote();
+
+      if (count >= 5) {
+        messageEl.innerHTML = `<div class="note">Sharing complete. You can now submit.</div>`;
+      }
+    });
+
+    regForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (localStorage.getItem(LS_SUBMITTED) === 'true') return;
+
+      if (count < 5) {
+        alert('Please finish the 5 WhatsApp shares before submitting.');
+        return;
+      }
+
+      // Disable UI while submitting
+      submitBtn.classList.add('disabled');
+      submitBtn.textContent = 'Submitting...';
+
+      const formData = new FormData();
+      formData.append('name', document.getElementById('name').value);
+      formData.append('phone', document.getElementById('phone').value);
+      formData.append('email', document.getElementById('email').value);
+      formData.append('college', document.getElementById('college').value);
+
+      const fileInput = document.getElementById('screenshot');
+      if (fileInput.files.length > 0) {
+        formData.append('screenshot', fileInput.files[0]);
+      }
+
+      // also pass the share count for records
+      formData.append('share_count', String(count));
+
+      try {
+        const res = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          body: formData
+        });
+        const json = await res.json();
+        if (json && json.result === 'success') {
+          // set submitted state
+          localStorage.setItem(LS_SUBMITTED, 'true');
+          markSubmittedState();
+          statusEl.textContent = 'Submitted';
+        } else {
+          throw new Error(json && json.message ? json.message : 'Server error');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Submission failed. Check console and Apps Script deployment URL.');
+        submitBtn.classList.remove('disabled');
+        submitBtn.textContent = 'Submit Registration';
+      }
+    });
+
+    function markSubmittedState(){
+      // disable all inputs and buttons
+      document.querySelectorAll('input,select,button').forEach(el => el.disabled = true);
+      messageEl.innerHTML = `<div class="success">🎉 Your submission has been recorded. Thanks for being part of Tech for Girls!</div>`;
+    }
+
+    clearBtn.addEventListener('click', () => {
+      // dev-only reset (remove before production)
+      if (!confirm('Reset local state?')) return;
+      localStorage.removeItem(LS_COUNT);
+      localStorage.removeItem(LS_SUBMITTED);
+      count = 0;
+      countEl.textContent = '0';
+      shareNote.textContent = 'Share 5 times to enable submission.';
+      document.querySelectorAll('input,select').forEach(i => { if (i.type !== 'file') i.value = ''; });
+      messageEl.innerHTML = '';
+      document.querySelectorAll('input,select,button').forEach(el => el.disabled = false);
+    });
+  </script>
+
+  <!--
+    ============================
+    Google Apps Script (Server) - sample code
+    ============================
+
+    1) Create a new Google Apps Script project (script.google.com)
+    2) Replace code in Code.gs with the script below and save.
+    3) Deploy -> New deployment -> type: Web app
+       - Execute as: Me
+       - Who has access: Anyone (or Anyone with link)
+       - Copy the Web app URL and paste into APPS_SCRIPT_URL above.
+
+    ---------- Apps Script sample (Code.gs) ----------
+
+    const FOLDER_ID = 'YOUR_GOOGLE_DRIVE_FOLDER_ID'; // folder to store uploads
+    const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID';
+
+    function doGet(e){
+      return ContentService.createTextOutput(JSON.stringify({status:'ok'})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    function doPost(e) {
+      try {
+        // For form-data with files use the 'e' parameter's 'parameter' and 'files'
+        const params = e.parameter || {};
+        const files = e.files || {};
+
+        const name = params.name || '';
+        const phone = params.phone || '';
+        const email = params.email || '';
+        const college = params.college || '';
+        const share_count = params.share_count || '';
+
+        // handle file
+        let fileUrl = '';
+        if (files.screenshot) {
+          const blob = files.screenshot; // Blob
+          const folder = DriveApp.getFolderById(FOLDER_ID);
+          const created = folder.createFile(blob);
+          fileUrl = created.getUrl();
+        }
+
+        // append to sheet
+        const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+        const sheet = ss.getSheets()[0];
+        sheet.appendRow([new Date(), name, phone, email, college, share_count, fileUrl]);
+
+        return ContentService.createTextOutput(JSON.stringify({result:'success', fileUrl:fileUrl})).setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        const msg = err.message || String(err);
+        return ContentService.createTextOutput(JSON.stringify({result:'error', message: msg})).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    ---------- End Apps Script sample ----------
+
+    Notes:
+    - To get file upload working reliably, deploy as "Anyone, even anonymous" or allow the correct OAuth scopes.
+    - You will need to create a Drive folder and a Google Sheet; put their IDs into the constants above.
+    - For file uploads, Apps Script expects the POST to be multipart/form-data; the browser's FormData works fine.
+
+    ============================
+    Quick GitHub + Pages steps
+    ============================
+    1) Create a new GitHub repo (public/private)
+    2) Add this HTML file as index.html in the repo root or inside /docs
+    3) Commit with meaningful messages (e.g., "init: registration page UI")
+    4) In repository Settings -> Pages -> Source: choose main branch / root or /docs
+    5) After saving, GitHub Pages will give you a live URL.
+
+    Good luck! Remove the dev "Reset" button before final submission if you don't want it.
+  -->
+</body>
+</html>
